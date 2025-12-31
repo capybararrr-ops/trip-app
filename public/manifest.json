@@ -1,0 +1,16 @@
+{
+  "short_name": "泰國行",
+  "name": "2026 泰國孝女行",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#6FAF8E",
+  "background_color": "#F6F3EE",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
