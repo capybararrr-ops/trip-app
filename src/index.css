@@ -11,17 +11,11 @@
 body {
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #f5f3ee; /* 國際版背景奶油白 */
+  justify-content: center; /* 讓內容居中 */
+  background-color: #F5F3EE; /* 使用您選定的奶油白底色 */
 }
 
-/* 隱藏滾動條但保持功能 (讓 App 更有原生感) */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* 確保全域盒模型正確 */
+* {
+  box-sizing: border-box;
 }
