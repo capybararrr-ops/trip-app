@@ -3,13 +3,12 @@ import { Home, Calendar, ShoppingBag, Ticket, Wallet, Camera, Share2, Download }
 import './index.css';
 import defaultHomeIllustration from './assets/home-trip.png';
 
-// 子組件引入 (請確認您的檔案路徑正確)
+// 子組件引入 (請確認路徑正確)
 import ScheduleTab from './components/ScheduleTab';
 import BookingTab from './components/BookingTab';
 import ShoppingTab from './components/ShoppingTab';
 import ExpenseTab from './components/ExpenseTab';
 
-// --- 一、國際版精細配色與間距 (8px System) ---
 const THEME = {
   bgBase: '#F5F3EE',       
   primary: '#A69685',      
@@ -25,7 +24,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- 資料讀取與持久化 (修正拼寫錯誤) ---
   const getInitialData = (key: string, defaultValue: any) => {
     const saved = localStorage.getItem(key);
     try { return saved ? JSON.parse(saved) : defaultValue; } catch { return defaultValue; }
@@ -48,7 +46,6 @@ export default function App() {
   const [shoppingList, setShoppingList] = useState(() => getInitialData('thai_shopping', []));
   const [expenseList, setExpenseList] = useState(() => getInitialData('thai_expense', []));
 
-  // --- 邏輯計算 ---
   const calculateDays = (start: string, end: string) => {
     const s = new Date(start);
     const e = new Date(end);
@@ -62,12 +59,8 @@ export default function App() {
     return `${s} — ${e}`;
   };
 
-  // --- 備份與還原功能 (修正未定義錯誤) ---
   const handleBackup = () => {
-    const allData = { 
-      tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext,
-      scheduleData, flights, shoppingList, expenseList 
-    };
+    const allData = { tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext, scheduleData, flights, shoppingList, expenseList };
     navigator.clipboard.writeText(JSON.stringify(allData)).then(() => alert("✅ 資料密碼已複製！"));
   };
 
@@ -91,6 +84,15 @@ export default function App() {
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setHomeImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   useEffect(() => {
     const data = { 
       intl_trip_title: tripTitle, intl_start_date: startDate, intl_end_date: endDate, 
@@ -101,58 +103,7 @@ export default function App() {
   }, [tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext, scheduleData, flights, shoppingList, expenseList]);
 
   return (
-    <div 
-      className="max-w-[430px] mx-auto min-h-screen flex flex-col relative transition-all duration-500 font-inter text-left"
-      style={{ backgroundColor: THEME.bgBase, color: THEME.textMain }}
-    >
+    <div className="max-w-[430px] mx-auto min-h-screen flex flex-col relative font-inter text-left" style={{ backgroundColor: THEME.bgBase, color: THEME.textMain }}>
       <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start">
         {isEditingTitle ? (
-          <input autoFocus className="text-[28px] font-semibold tracking-[0.12em] bg-transparent border-b-2 border-[#A69685] outline-none w-full" value={tripTitle} onChange={(e) => setTripTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} />
-        ) : (
-          <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase cursor-pointer leading-tight" onClick={() => setIsEditingTitle(true)}>{tripTitle}</h1>
-        )}
-        <div className="mt-2">
-          {isEditingDate ? (
-            <div className="flex items-center gap-2" onBlur={() => setIsEditingDate(false)}>
-              <input type="date" className="text-xs bg-white border border-[#E2DFD8] p-1 rounded" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-              <input type="date" className="text-xs bg-white border border-[#E2DFD8] p-1 rounded" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            </div>
-          ) : (
-            <p className="text-[13px] font-medium tracking-[0.15em] uppercase" style={{ color: THEME.textSub }} onClick={() => setIsEditingDate(true)}>
-              {formatDateDisplay(startDate, endDate)} — <span style={{ color: THEME.highlight }}>{calculateDays(startDate, endDate)} DAYS</span>
-            </p>
-          )}
-        </div>
-      </header>
-
-      <main className="w-full px-10 flex-1 pb-48">
-        {activeTab === 'home' && (
-          <div className="flex flex-col animate-in fade-in duration-1000">
-            <div className="relative group w-full aspect-[3/4] mt-10 bg-white rounded-[16px] border border-[#E2DFD8] flex items-center justify-center overflow-hidden shadow-sm">
-              <img src={homeImage} alt="Trip" className="w-full h-full object-cover grayscale-[5%] transition-all duration-700" />
-              <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-4 right-4 p-3 bg-white/90 backdrop-blur rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><Camera size={18} color={THEME.textMain} /></button>
-              <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => setHomeImage(reader.result as string);
-                  reader.readAsDataURL(file);
-                }
-              }} />
-            </div>
-
-            <div className="mt-12 space-y-10">
-              <div className="space-y-4">
-                {isEditingHeadline ? (
-                  <input autoFocus className="text-[22px] font-semibold tracking-tight bg-transparent border-b border-[#A69685] outline-none w-full" value={homeHeadline} onChange={(e) => setHomeHeadline(e.target.value)} onBlur={() => setIsEditingHeadline(false)} />
-                ) : (
-                  <h2 className="text-[22px] font-semibold tracking-tight" onClick={() => setIsEditingHeadline(true)}>{homeHeadline}</h2>
-                )}
-                {isEditingSubtext ? (
-                  <textarea autoFocus className="text-[16px] leading-relaxed font-light bg-transparent border border-[#E2DFD8] p-2 rounded outline-none w-full" style={{ color: THEME.textSub }} value={homeSubtext} onChange={(e) => setHomeSubtext(e.target.value)} onBlur={() => setIsEditingSubtext(false)} rows={3} />
-                ) : (
-                  <p className="text-[16px] leading-relaxed font-light" style={{ color: THEME.textSub }} onClick={() => setIsEditingSubtext(true)}>{homeSubtext}</p>
-                )}
-              </div>
-              
-              <button onClick={() => setActiveTab('schedule')} className="w-full py-5 rounded-[16px] text-[15px] tracking-[0.2
+          <input autoFocus className="
