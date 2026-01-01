@@ -3,7 +3,7 @@ import { Home, Calendar, ShoppingBag, Ticket, Wallet } from 'lucide-react';
 import './index.css';
 import homeIllustration from './assets/home-trip.png';
 
-// 假設子組件路徑不變
+// 假設子組件路徑與名稱正確
 import ScheduleTab from './components/ScheduleTab';
 import BookingTab from './components/BookingTab';
 import ShoppingTab from './components/ShoppingTab';
@@ -102,24 +102,25 @@ export default function App() {
       className="max-w-[430px] mx-auto min-h-screen flex flex-col relative transition-colors duration-700 font-sans"
       style={{ backgroundColor: currentMujiBg, color: MUJI_COLORS.textMain }}
     >
+      {/* --- Header 區域 --- */}
       <header className="w-full px-10 pt-20 pb-10 flex justify-between items-start">
         <div className="flex flex-col flex-1">
           {isEditingTitle ? (
             <input
               autoFocus
-              className="text-xl font-medium tracking-[0.2em] bg-transparent border-b border-[#333333] outline-none w-full"
+              className="text-xl font-medium tracking-[0.2em] bg-transparent border-b border-[#333333] outline-none w-full text-left"
               value={tripTitle}
               onChange={(e) => setTripTitle(e.target.value)}
               onBlur={() => setIsEditingTitle(false)}
               onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
             />
           ) : (
-            <h1 className="text-xl font-medium tracking-[0.2em] uppercase cursor-pointer" onClick={() => setIsEditingTitle(true)}>
+            <h1 className="text-xl font-medium tracking-[0.2em] uppercase cursor-pointer text-left" onClick={() => setIsEditingTitle(true)}>
               {tripTitle}
             </h1>
           )}
 
-          <div className="mt-3 min-h-[20px]">
+          <div className="mt-3 min-h-[20px] text-left">
             {isEditingDate ? (
               <div className="flex items-center gap-2" onBlur={() => setIsEditingDate(false)}>
                 <input type="date" className="text-[10px] bg-transparent border-b border-gray-400 outline-none" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -137,20 +138,21 @@ export default function App() {
 
         <button 
           onClick={() => setCurrentMujiBg(currentMujiBg === MUJI_COLORS.bgLight ? MUJI_COLORS.bgLighter : MUJI_COLORS.bgLight)}
-          className="w-8 h-8 border border-gray-300 flex items-center justify-center text-[10px] opacity-60"
+          className="w-8 h-8 border border-gray-300 flex items-center justify-center text-[10px] opacity-60 transition-colors"
         >
           {currentMujiBg === MUJI_COLORS.bgLight ? 'B1' : 'B2'}
         </button>
       </header>
 
+      {/* --- Main 區域 --- */}
       <main className="w-full px-10 flex-1 pb-40">
         {activeTab === 'home' && (
           <div className="flex flex-col animate-in fade-in duration-1000">
-            <div className="w-full aspect-[3/4] bg-white border border-[#E0DDD5] flex items-center justify-center p-12 mb-12 shadow-sm">
+            <div className="w-full aspect-[3/4] bg-white border border-[#E0DDD5] flex items-center justify-center p-12 mb-12 shadow-sm transition-transform active:scale-[0.98] cursor-pointer" onClick={() => setActiveTab('schedule')}>
               <img src={homeIllustration} alt="Trip" className="w-full h-auto grayscale-[20%] opacity-90 object-contain" />
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-8 text-left">
               <h2 className="text-lg font-light leading-relaxed tracking-wide">
                 旅の記録。<br/>
                 <span className="text-[12px] opacity-40 tracking-widest uppercase">Memory of Adventure</span>
@@ -158,14 +160,14 @@ export default function App() {
               
               <button 
                 onClick={() => setActiveTab('schedule')}
-                className="w-full py-4 border border-[#333333] text-[11px] tracking-[0.5em] font-medium uppercase hover:bg-[#333333] hover:text-white transition-all"
+                className="w-full py-4 border border-[#333333] text-[11px] tracking-[0.5em] font-medium uppercase hover:bg-[#333333] hover:text-white transition-all outline-none"
               >
                 Start Journey
               </button>
 
               <div className="grid grid-cols-2 gap-4 mt-12">
-                <button onClick={handleBackup} className="py-4 border border-gray-300 text-[10px] tracking-widest opacity-60">BACKUP</button>
-                <button onClick={handleRestore} className="py-4 border border-gray-300 text-[10px] tracking-widest opacity-60">RESTORE</button>
+                <button onClick={handleBackup} className="py-4 border border-gray-300 text-[10px] tracking-widest opacity-60 hover:opacity-100 transition-opacity">BACKUP</button>
+                <button onClick={handleRestore} className="py-4 border border-gray-300 text-[10px] tracking-widest opacity-60 hover:opacity-100 transition-opacity">RESTORE</button>
               </div>
             </div>
           </div>
@@ -177,6 +179,7 @@ export default function App() {
         {activeTab === 'expense' && <ExpenseTab expenseList={expenseList} setExpenseList={setExpenseList} />}
       </main>
 
+      {/* --- Navigation 區域 --- */}
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] h-20 bg-white border-t border-[#E0DDD5] flex justify-around items-center px-4 z-50">
         <NavButton Icon={Home} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavButton Icon={Calendar} active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')} />
@@ -191,7 +194,7 @@ export default function App() {
 function NavButton({ Icon, active, onClick }: any) {
   return (
     <button onClick={onClick} className="flex flex-col items-center justify-center flex-1 transition-all outline-none">
-      <div className={`p-2 ${active ? 'bg-[#E0DDD5]' : ''}`}>
+      <div className={`p-2 transition-colors ${active ? 'bg-[#E0DDD5]' : 'bg-transparent'}`}>
         <Icon size={20} strokeWidth={1.2} color={active ? '#333333' : '#8C8C8C'} />
       </div>
     </button>
