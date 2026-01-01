@@ -24,28 +24,29 @@ export default function App() {
   // --- 本地資料讀取 ---
   const getInitialData = (key: string, defaultValue: any) => {
     const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : defaultValue;
+    try {
+      return saved ? JSON.parse(saved) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
   };
 
   // --- 狀態設定 ---
-  // 1. 標題與日期
   const [tripTitle, setTripTitle] = useState(() => getInitialData('muji_trip_title', 'Thailand Trip'));
   const [startDate, setStartDate] = useState(() => getInitialData('muji_start_date', '2026-02-12'));
   const [endDate, setEndDate] = useState(() => getInitialData('muji_end_date', '2026-02-17'));
   const [currentMujiBg, setCurrentMujiBg] = useState(() => getInitialData('muji_theme', MUJI_COLORS.bgLight));
   
-  // 2. 編輯模式狀態
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
 
-  // 3. 原始數據狀態
+  // 數據狀態
   const [scheduleData, setScheduleData] = useState(() => getInitialData('thai_schedule', [
-    { day: 'DAY 1', date: '02/12', items: [{ time: '14:00', icon: '🏨', task: 'Check-in', desc: 'Hotel' }] }
+    { day: 'DAY 1', date: '02/12', items: [{ time: '14:00', task: 'Check-in', desc: 'Hotel' }] }
   ]));
   const [flights, setFlights] = useState(() => getInitialData('thai_flights', []));
   const [shoppingList, setShoppingList] = useState(() => getInitialData('thai_shopping', []));
   const [expenseList, setExpenseList] = useState(() => getInitialData('thai_expense', []));
-  const [isBookingEditing, setIsBookingEditing] = useState(false);
 
   // --- 邏輯計算 ---
   const calculateDays = (start: string, end: string) => {
@@ -88,6 +89,9 @@ export default function App() {
         if (p.startDate) setStartDate(p.startDate);
         if (p.endDate) setEndDate(p.endDate);
         if (p.scheduleData) setScheduleData(p.scheduleData);
+        if (p.flights) setFlights(p.flights);
+        if (p.shoppingList) setShoppingList(p.shoppingList);
+        if (p.expenseList) setExpenseList(p.expenseList);
         alert("🎉 資料還原成功！");
       } catch (e) { alert("❌ 格式錯誤"); }
     }
@@ -98,7 +102,6 @@ export default function App() {
       className="max-w-[430px] mx-auto min-h-screen flex flex-col relative transition-colors duration-700 font-sans"
       style={{ backgroundColor: currentMujiBg, color: MUJI_COLORS.textMain }}
     >
-      {/* --- Header 區域 --- */}
       <header className="w-full px-10 pt-20 pb-10 flex justify-between items-start">
         <div className="flex flex-col flex-1">
           {isEditingTitle ? (
@@ -140,11 +143,10 @@ export default function App() {
         </button>
       </header>
 
-      {/* --- Main 區域 --- */}
       <main className="w-full px-10 flex-1 pb-40">
         {activeTab === 'home' && (
           <div className="flex flex-col animate-in fade-in duration-1000">
-            <div className="w-full aspect-[3/4] bg-white border border-[#E0DDD5] flex items-center justify-center p-12 mb-12">
+            <div className="w-full aspect-[3/4] bg-white border border-[#E0DDD5] flex items-center justify-center p-12 mb-12 shadow-sm">
               <img src={homeIllustration} alt="Trip" className="w-full h-auto grayscale-[20%] opacity-90 object-contain" />
             </div>
 
@@ -171,11 +173,10 @@ export default function App() {
 
         {activeTab === 'schedule' && <ScheduleTab scheduleData={scheduleData} setScheduleData={setScheduleData} />}
         {activeTab === 'shopping' && <ShoppingTab shoppingList={shoppingList} setShoppingList={setShoppingList} />}
-        {activeTab === 'bookings' && <BookingTab flights={flights} isEditing={isBookingEditing} setIsEditing={setIsBookingEditing} />}
+        {activeTab === 'bookings' && <BookingTab flights={flights} setFlights={setFlights} isEditing={false} setIsEditing={() => {}} />}
         {activeTab === 'expense' && <ExpenseTab expenseList={expenseList} setExpenseList={setExpenseList} />}
       </main>
 
-      {/* --- Navigation 區域 --- */}
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] h-20 bg-white border-t border-[#E0DDD5] flex justify-around items-center px-4 z-50">
         <NavButton Icon={Home} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavButton Icon={Calendar} active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')} />
@@ -189,7 +190,7 @@ export default function App() {
 
 function NavButton({ Icon, active, onClick }: any) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center justify-center flex-1 transition-all">
+    <button onClick={onClick} className="flex flex-col items-center justify-center flex-1 transition-all outline-none">
       <div className={`p-2 ${active ? 'bg-[#E0DDD5]' : ''}`}>
         <Icon size={20} strokeWidth={1.2} color={active ? '#333333' : '#8C8C8C'} />
       </div>
