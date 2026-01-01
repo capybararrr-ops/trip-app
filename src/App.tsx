@@ -16,7 +16,6 @@ export default function App() {
     const saved = localStorage.getItem(key);
     try { 
       const parsed = saved ? JSON.parse(saved) : null;
-      // 如果存下的資料是空的陣列，就回傳預設值
       if (key === 'thai_flights' && (!parsed || parsed.length === 0)) return defaultValue;
       return parsed || defaultValue;
     } catch { return defaultValue; }
@@ -36,12 +35,9 @@ export default function App() {
   const [isEditingTab, setIsEditingTab] = useState(false);
 
   const [scheduleData, setScheduleData] = useState(() => getInitialData('thai_schedule', []));
-  
-  // 修正：確保這裡有預設資料
   const [flights, setFlights] = useState(() => getInitialData('thai_flights', [
     { from: 'TPE', to: 'BKK', flightNum: 'JX741', date: '02/12', time: '10:40', gate: 'B7', seat: '24K', imgUrl: '', pdfUrl: '' }
   ]));
-  
   const [shoppingList, setShoppingList] = useState(() => getInitialData('thai_shopping', []));
   const [expenseList, setExpenseList] = useState(() => getInitialData('thai_expense', []));
 
@@ -54,7 +50,7 @@ export default function App() {
 
   const handleBackup = () => {
     const data = { tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext, scheduleData, flights, shoppingList, expenseList };
-    navigator.clipboard.writeText(JSON.stringify(data)).then(() => alert("✅ 資料已複製"));
+    navigator.clipboard.writeText(JSON.stringify(data)).then(() => alert("✅ 資料密碼已複製"));
   };
 
   const handleRestore = () => {
@@ -81,29 +77,50 @@ export default function App() {
   return (
     <div className="max-w-[430px] mx-auto min-h-screen flex flex-col relative font-inter bg-[#F5F3EE] text-[#2F2F2F] text-left">
       {activeTab === 'home' && (
-        <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start">
-          <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase cursor-pointer" onClick={() => setIsEditingTitle(true)}>{tripTitle}</h1>
-          <p className="text-[13px] font-medium tracking-[0.15em] uppercase text-[#5A5A5A] mt-2">
-            {startDate.replace(/-/g, '.')} — {endDate.split('-').pop()} — <span className="text-[#8E735B]">{calculateDays(startDate, endDate)} DAYS</span>
-          </p>
+        <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start animate-in fade-in">
+          {isEditingTitle ? (
+            <input autoFocus className="text-[28px] font-semibold bg-transparent border-b border-[#A69685] outline-none w-full uppercase" value={tripTitle} onChange={(e) => setTripTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} />
+          ) : (
+            <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase cursor-pointer" onClick={() => setIsEditingTitle(true)}>{tripTitle}</h1>
+          )}
+          <div className="mt-2 text-[13px] font-medium tracking-[0.15em] uppercase text-[#5A5A5A]">
+            {isEditingDate ? (
+              <div className="flex gap-2" onBlur={() => setIsEditingDate(false)}>
+                <input type="date" className="bg-white border" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <input type="date" className="bg-white border" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              </div>
+            ) : (
+              <p className="cursor-pointer" onClick={() => setIsEditingDate(true)}>
+                {startDate.replace(/-/g, '.')} — {endDate.split('-').pop()} — <span className="text-[#8E735B]">{calculateDays(startDate, endDate)} DAYS</span>
+              </p>
+            )}
+          </div>
         </header>
       )}
 
       <main className={`w-full px-10 flex-1 pb-48 ${activeTab !== 'home' ? 'pt-16' : ''}`}>
         {activeTab === 'home' && (
           <div className="flex flex-col animate-in fade-in">
-            <div className="relative w-full aspect-[3/4] mt-10 bg-white rounded-[16px] border border-[#E2DFD8] overflow-hidden shadow-sm">
+            <div className="relative w-full aspect-[3/4] mt-10 bg-white rounded-[16px] border border-[#E2DFD8] overflow-hidden">
               <img src={homeImage} className="w-full h-full object-cover" />
               <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-4 right-4 p-3 bg-white/90 rounded-full shadow-md"><Camera size={18}/></button>
               <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={(e) => {
                 const f = e.target.files?.[0];
-                if(f){ const r = new FileReader(); r.onloadend = () => setHomeImage(r.result as string); r.readAsDataURL(f); }
+                if(f){ const r = new FileReader(); r.onloadend = () => { if(r.result) setHomeImage(r.result as string); }; r.readAsDataURL(f); }
               }} />
             </div>
-            <div className="mt-12 space-y-10">
+            <div className="mt-12 space-y-8">
               <div className="space-y-4">
-                <h2 className="text-[22px] font-semibold tracking-tight">{homeHeadline}</h2>
-                <p className="text-[16px] leading-relaxed font-light text-[#5A5A5A]">{homeSubtext}</p>
+                {isEditingHeadline ? (
+                  <input autoFocus className="text-[22px] font-semibold bg-transparent border-b border-[#A69685] outline-none w-full" value={homeHeadline} onChange={(e) => setHomeHeadline(e.target.value)} onBlur={() => setIsEditingHeadline(false)} />
+                ) : (
+                  <h2 className="text-[22px] font-semibold tracking-tight cursor-pointer" onClick={() => setIsEditingHeadline(true)}>{homeHeadline}</h2>
+                )}
+                {isEditingSubtext ? (
+                  <textarea autoFocus className="text-[16px] leading-relaxed font-light bg-transparent border border-[#E2DFD8] p-2 rounded outline-none w-full" rows={3} value={homeSubtext} onChange={(e) => setHomeSubtext(e.target.value)} onBlur={() => setIsEditingSubtext(false)} />
+                ) : (
+                  <p className="text-[16px] leading-relaxed font-light text-[#5A5A5A] cursor-pointer" onClick={() => setIsEditingSubtext(true)}>{homeSubtext}</p>
+                )}
               </div>
               <button onClick={() => setActiveTab('schedule')} className="w-full py-5 rounded-[16px] text-[15px] font-semibold uppercase bg-[#A69685] text-white">START JOURNEY</button>
               <div className="flex justify-center gap-8 pt-4">
@@ -119,7 +136,7 @@ export default function App() {
         {activeTab === 'expense' && <ExpenseTab expenseList={expenseList} setExpenseList={setExpenseList} />}
       </main>
 
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[390px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50">
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[390px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50 shadow-lg">
         <NavBtn Icon={Home} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavBtn Icon={Calendar} active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')} />
         <NavBtn Icon={ShoppingBag} active={activeTab === 'shopping'} onClick={() => setActiveTab('shopping')} />
@@ -130,7 +147,7 @@ export default function App() {
   );
 }
 
-function NavBtn({ Icon, active, onClick }: any) {
+function NavBtn({ Icon, active, onClick }: { Icon: any, active: boolean, onClick: () => void }) {
   return (
     <button onClick={onClick} className="flex flex-col items-center justify-center flex-1 relative outline-none">
       <div className={`p-3 rounded-2xl transition-all ${active ? 'bg-[#F5F3EE] scale-110' : 'opacity-30'}`}>
