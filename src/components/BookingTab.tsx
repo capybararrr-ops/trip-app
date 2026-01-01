@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Plane, Maximize2, Camera, Link2, FileText, ChevronRight, X, ArrowRight } from 'lucide-react';
+// 修正：移除了 Plane, Link2, ChevronRight 等未使用的引用
+import { Maximize2, Camera, FileText, X, ArrowRight } from 'lucide-react';
 
 // 沿用主程式的配色規範
 const GLOBAL_THEME = {
   bgBase: '#F5F3EE',       
-  primary: '#C6B8A6',      // 灰調暖駝色
+  primary: '#C6B8A6',      
   secondary: '#9DA8A1',    
   highlight: '#D2A48C',    
   textMain: '#2F2F2F',     
@@ -30,7 +31,7 @@ export default function BookingTab({ flights, updateFlight, isEditing, setIsEdit
 
   return (
     <div className="animate-in fade-in slide-in-from-right duration-500 text-left pb-44 font-inter">
-      {/* --- 頁面標題：與首頁標題風格一致 --- */}
+      {/* --- 頁面標題 --- */}
       <div className="flex justify-between items-end mb-12 px-2">
         <div>
           <h2 className="text-[28px] font-semibold tracking-tight uppercase leading-tight" style={{ color: GLOBAL_THEME.textMain }}>
@@ -55,7 +56,7 @@ export default function BookingTab({ flights, updateFlight, isEditing, setIsEdit
       <div className="space-y-16">
         {flights && flights.map((flight: any, index: number) => (
           <div key={index} className="flex flex-col">
-            {/* --- 航班核心資訊：雜誌感排版 --- */}
+            {/* --- 航班核心資訊 --- */}
             <div className="border-b-2 border-[#C6B8A6] pb-6 mb-8 flex justify-between items-end">
               <div className="flex flex-col gap-2">
                 <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: GLOBAL_THEME.highlight }}>
@@ -80,7 +81,7 @@ export default function BookingTab({ flights, updateFlight, isEditing, setIsEdit
               )}
             </div>
 
-            {/* --- 細節網格：放大字體，移除背景 --- */}
+            {/* --- 細節網格 --- */}
             <div className="grid grid-cols-2 gap-y-10 gap-x-8 mb-10">
               {[
                 { label: 'Date', field: 'date', placeholder: '2026.02.12' },
@@ -108,7 +109,7 @@ export default function BookingTab({ flights, updateFlight, isEditing, setIsEdit
               ))}
             </div>
 
-            {/* --- 截圖區：保持 3:4 優雅比例，移除重陰影 --- */}
+            {/* --- 截圖區 --- */}
             <div className="space-y-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: GLOBAL_THEME.textHint }}>
                 Digital Pass Screenshot
@@ -136,7 +137,7 @@ export default function BookingTab({ flights, updateFlight, isEditing, setIsEdit
               </div>
             </div>
 
-            {/* --- PDF 連結按鈕：改為細線條風格 --- */}
+            {/* --- PDF 連結按鈕 --- */}
             <div className="mt-8">
               {isEditing ? (
                 <div className="flex flex-col gap-2">
