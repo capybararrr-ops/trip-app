@@ -1,21 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-thai-bg: #F6F3EE;
+  --color-thai-main: #F2B94B;
+  --color-thai-green: #6FAF8E;
+  --color-thai-title: #5B4636;
+  --color-thai-body: #8A7F73;
+  --color-thai-muted: #B7AEA5;
 
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Poppins', 'Noto Sans TC', sans-serif;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  justify-content: center; /* 讓內容居中 */
-  background-color: #F5F3EE; /* 使用您選定的奶油白底色 */
+@layer base {
+  body {
+    @apply antialiased m-0 p-0;
+    background-color: #F6F3EE;
+    background-image: radial-gradient(#D1CAC2 0.8px, transparent 0.8px);
+    background-size: 24px 24px;
+  }
 }
 
-/* 確保全域盒模型正確 */
-* {
-  box-sizing: border-box;
+.illustration-card {
+  @apply bg-white border border-white rounded-[50px] relative overflow-hidden transition-all active:scale-95 cursor-pointer;
+  box-shadow: 0 25px 50px -12px rgba(91, 70, 54, 0.12);
 }
+
+.btn-pill-start {
+  @apply bg-[#6FAF8E] text-white font-bold rounded-full shadow-lg active:scale-90 transition-all;
+  letter-spacing: 0.15em;
+  box-shadow: 0 10px 20px -5px rgba(110, 175, 142, 0.4);
+}
+
+/* 隱藏捲軸但保持滾動功能 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
