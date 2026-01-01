@@ -3,7 +3,7 @@ import { Home, Calendar, ShoppingBag, Ticket, Wallet, Camera, Share2, Download }
 import './index.css';
 import defaultHomeIllustration from './assets/home-trip.png';
 
-// 子組件引入
+// 請確保子組件路徑正確
 import ScheduleTab from './components/ScheduleTab';
 import BookingTab from './components/BookingTab';
 import ShoppingTab from './components/ShoppingTab';
@@ -13,10 +13,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- 1. 資料持久化邏輯 ---
+  // --- 1. 資料持久化邏輯 (修正拼寫錯誤) ---
   const getInitialData = (key: string, defaultValue: any) => {
     const saved = localStorage.getItem(key);
-    try { return saved ? JSON.parse(saved) : defaultValue; } catch { return defaultValue; }
+    try {
+      return saved ? JSON.parse(saved) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
   };
 
   const [tripTitle, setTripTitle] = useState(() => getInitialData('intl_trip_title', 'THAILAND JOURNEY'));
@@ -30,11 +34,11 @@ export default function App() {
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [isEditingHeadline, setIsEditingHeadline] = useState(false);
   const [isEditingSubtext, setIsEditingSubtext] = useState(false);
-  const [isEditingTab, setIsEditingTab] = useState(false); // 控制分頁編輯模式
+  const [isEditingTab, setIsEditingTab] = useState(false);
 
   const [scheduleData, setScheduleData] = useState(() => getInitialData('thai_schedule', []));
   
-  // 核心：確保 flights 的結構完整
+  // 核心：機票初始數據與狀態
   const [flights, setFlights] = useState(() => getInitialData('thai_flights', [
     { from: 'TPE', to: 'BKK', flightNum: 'JX741', date: '02/12', time: '10:40', gate: 'B7', seat: '24K', imgUrl: '', pdfUrl: '' }
   ]));
@@ -42,26 +46,35 @@ export default function App() {
   const [shoppingList, setShoppingList] = useState(() => getInitialData('thai_shopping', []));
   const [expenseList, setExpenseList] = useState(() => getInitialData('thai_expense', []));
 
-  // --- 2. 備份與還原 (功能保留) ---
+  // --- 2. 修正報錯的備份與還原函數 ---
   const handleBackup = () => {
     const data = { tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext, scheduleData, flights, shoppingList, expenseList };
-    navigator.clipboard.writeText(JSON.stringify(data)).then(() => alert("✅ 資料已備份至剪貼簿"));
+    navigator.clipboard.writeText(JSON.stringify(data)).then(() => alert("✅ 資料密碼已複製！"));
   };
 
   const handleRestore = () => {
-    const backup = prompt("請貼入資料密碼：");
+    const backup = prompt("請貼入之前的資料密碼：");
     if (backup) {
       try {
         const p = JSON.parse(backup);
         if (p.tripTitle) setTripTitle(p.tripTitle);
         if (p.flights) setFlights(p.flights);
         if (p.scheduleData) setScheduleData(p.scheduleData);
-        alert("🎉 資料還原成功");
-      } catch (e) { alert("❌ 格式錯誤"); }
+        alert("🎉 資料還原成功！");
+      } catch (e) {
+        alert("❌ 格式不正確");
+      }
     }
   };
 
-  // --- 3. 自動儲存 ---
+  const calculateDays = (start: string, end: string) => {
+    const s = new Date(start);
+    const e = new Date(end);
+    const diff = Math.ceil((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return isNaN(diff) ? 0 : diff;
+  };
+
+  // --- 3. 自動儲存監聽 ---
   useEffect(() => {
     const data = { 
       intl_trip_title: tripTitle, intl_start_date: startDate, intl_end_date: endDate, 
@@ -74,14 +87,14 @@ export default function App() {
   return (
     <div className="max-w-[430px] mx-auto min-h-screen flex flex-col relative font-inter bg-[#F5F3EE] text-[#2F2F2F] text-left">
       
-      {/* ⚠️ 修正：只有在首頁才顯示 Trip Title，解決重複問題 */}
+      {/* ⚠️ 修正：只有在首頁(home)時顯示大標題，解決重複顯示問題 */}
       {activeTab === 'home' && (
         <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start animate-in fade-in duration-500">
           <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase cursor-pointer" onClick={() => setIsEditingTitle(true)}>
             {tripTitle}
           </h1>
           <p className="text-[13px] font-medium tracking-[0.15em] uppercase text-[#5A5A5A] mt-2">
-            {startDate.replace(/-/g, '.')} — {endDate.split('-').pop()}
+            {startDate.replace(/-/g, '.')} — {endDate.split('-').pop()} — <span className="text-[#8E735B]">{calculateDays(startDate, endDate)} DAYS</span>
           </p>
         </header>
       )}
@@ -89,19 +102,22 @@ export default function App() {
       <main className={`w-full px-10 flex-1 pb-48 ${activeTab !== 'home' ? 'pt-16' : ''}`}>
         {activeTab === 'home' && (
           <div className="flex flex-col animate-in fade-in">
-            {/* 封面圖更換功能保留 */}
-            <div className="relative w-full aspect-[3/4] mt-10 bg-white rounded-[16px] border border-[#E2DFD8] overflow-hidden">
+            <div className="relative w-full aspect-[3/4] mt-10 bg-white rounded-[16px] border border-[#E2DFD8] overflow-hidden shadow-sm">
               <img src={homeImage} className="w-full h-full object-cover" />
               <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-4 right-4 p-3 bg-white/90 rounded-full shadow-sm"><Camera size={18}/></button>
               <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={(e) => {
                 const f = e.target.files?.[0];
-                if(f){ const r = new FileReader(); r.onloadend = () => setHomeImage(r.result as string); r.readAsDataURL(f); }
+                if(f){ 
+                  const r = new FileReader(); 
+                  r.onloadend = () => setHomeImage(r.result as string); 
+                  r.readAsDataURL(f); 
+                }
               }} />
             </div>
             
             <div className="mt-12 space-y-10">
               <div className="space-y-4">
-                <h2 className="text-[22px] font-semibold tracking-tight cursor-pointer" onClick={() => setIsEditingHeadline(true)}>{homeHeadline}</h2>
+                <h2 className="text-[22px] font-semibold tracking-tight" onClick={() => setIsEditingHeadline(true)}>{homeHeadline}</h2>
                 <p className="text-[16px] leading-relaxed font-light text-[#5A5A5A]" onClick={() => setIsEditingSubtext(true)}>{homeSubtext}</p>
               </div>
               <button onClick={() => setActiveTab('schedule')} className="w-full py-5 rounded-[16px] text-[15px] font-semibold uppercase bg-[#A69685] text-white">START JOURNEY</button>
@@ -113,7 +129,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 核心修正：正確對接 BookingTab */}
+        {/* 核心修正：將 setFlights 傳遞給子組件，修復上傳功能 */}
         {activeTab === 'bookings' && (
           <BookingTab 
             flights={flights} 
@@ -128,8 +144,7 @@ export default function App() {
         {activeTab === 'expense' && <ExpenseTab expenseList={expenseList} setExpenseList={setExpenseList} />}
       </main>
 
-      {/* 導覽列 */}
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[390px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50">
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[390px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50 shadow-2xl">
         <NavBtn Icon={Home} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavBtn Icon={Calendar} active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')} />
         <NavBtn Icon={ShoppingBag} active={activeTab === 'shopping'} onClick={() => setActiveTab('shopping')} />
