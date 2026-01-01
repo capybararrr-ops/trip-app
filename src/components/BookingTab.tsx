@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Maximize2, Camera, X, ArrowRight } from 'lucide-react';
+import { Maximize2, Camera, FileText, X, ArrowRight, ExternalLink } from 'lucide-react';
 
 export default function BookingTab({ flights, setFlights, isEditing, setIsEditing }: any) {
   const [previewImg, setPreviewImg] = useState<string | null>(null);
@@ -77,6 +77,43 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
               })}
             </div>
 
+            {/* PDF 連結功能區塊 */}
+            <div className="mb-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3 text-[#9A9A9A]">Digital Document (PDF)</p>
+              {isEditing ? (
+                <div className="flex items-center gap-3 bg-white/50 p-3 rounded-lg border border-[#E2DFD8]">
+                  <FileText size={18} className="text-[#8E735B]" />
+                  <input 
+                    className="bg-transparent text-sm outline-none w-full" 
+                    placeholder="Paste PDF Link (Google Drive, etc.)" 
+                    value={flight.pdfUrl || ''} 
+                    onChange={(e) => updateFlight('pdfUrl', e.target.value, index)} 
+                  />
+                </div>
+              ) : (
+                flight.pdfUrl ? (
+                  <a 
+                    href={flight.pdfUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between w-full bg-white p-4 rounded-xl border border-[#E2DFD8] shadow-sm active:scale-[0.98] transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-[#F5F3EE] p-2 rounded-lg text-[#8E735B]">
+                        <FileText size={20} />
+                      </div>
+                      <span className="text-[13px] font-bold tracking-wider text-[#2F2F2F]">OPEN DIGITAL TICKET</span>
+                    </div>
+                    <ExternalLink size={16} className="text-[#C6B8A6]" />
+                  </a>
+                ) : (
+                  <div className="py-4 border-2 border-dashed border-[#E2DFD8] rounded-xl text-center opacity-30 text-[11px] font-bold tracking-widest uppercase">
+                    No PDF Linked
+                  </div>
+                )
+              )}
+            </div>
+
             <div className="space-y-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9A9A9A]">Digital Pass Screenshot</p>
               <div className="relative aspect-[3/4] bg-white rounded-[12px] border border-[#E2DFD8] overflow-hidden shadow-sm">
@@ -84,9 +121,9 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
                   <>
                     <img src={flight.imgUrl} className="w-full h-full object-cover" alt="Ticket" />
                     <div className="absolute bottom-4 right-4 flex gap-2">
-                      <button onClick={() => setPreviewImg(flight.imgUrl)} className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F]"><Maximize2 size={18}/></button>
+                      <button onClick={() => setPreviewImg(flight.imgUrl)} className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] active:scale-90"><Maximize2 size={18}/></button>
                       {isEditing && (
-                        <label className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] cursor-pointer">
+                        <label className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] cursor-pointer active:scale-90">
                           <Camera size={18}/><input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index)} className="hidden" />
                         </label>
                       )}
@@ -107,8 +144,8 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
 
       {previewImg && (
         <div className="fixed inset-0 bg-[#F5F3EE]/98 z-[200] flex items-center justify-center p-6 animate-in fade-in" onClick={() => setPreviewImg(null)}>
-          <button className="absolute top-12 right-8 text-[#2F2F2F] transition-transform active:scale-90"><X size={32}/></button>
-          <img src={previewImg} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" />
+          <button className="absolute top-12 right-8 text-[#2F2F2F] active:scale-90"><X size={32}/></button>
+          <img src={previewImg} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" alt="Preview" />
         </div>
       )}
     </div>
