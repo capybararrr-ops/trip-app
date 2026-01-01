@@ -4,6 +4,7 @@ import { Maximize2, Camera, FileText, X, ArrowRight } from 'lucide-react';
 export default function BookingTab({ flights, setFlights, isEditing, setIsEditing }: any) {
   const [previewImg, setPreviewImg] = useState<string | null>(null);
 
+  // --- 關鍵修正：確保資料能回傳並觸發 App.tsx 的持久化儲存 ---
   const updateFlight = (field: string, value: string, index: number) => {
     const newFlights = [...flights];
     newFlights[index] = { ...newFlights[index], [field]: value };
@@ -14,19 +15,19 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => updateFlight('imgUrl', reader.result as string, index);
+      reader.onloadend = () => {
+        // 將圖片轉為 Base64 字串儲存
+        updateFlight('imgUrl', reader.result as string, index);
+      };
       reader.readAsDataURL(file);
     }
   };
 
   return (
     <div className="animate-in fade-in slide-in-from-right duration-500 text-left pb-44">
-      {/* 頁面標題：移除重複內容 */}
-      <div className="flex justify-between items-end mb-12 pt-4">
-        <div>
-          <h2 className="text-[28px] font-semibold tracking-tight uppercase leading-tight text-[#2F2F2F]">Flights</h2>
-          <p className="text-[12px] font-medium tracking-[0.2em] uppercase mt-2 text-[#6B6B6B]">Transit Protocol</p>
-        </div>
+      {/* 標題區：已移除 Trip Name 與 Transit Protocol */}
+      <div className="flex justify-between items-center mb-12 pt-4">
+        <h2 className="text-[32px] font-semibold tracking-tight uppercase text-[#2F2F2F]">Flights</h2>
         <button 
           onClick={() => setIsEditing(!isEditing)}
           className={`text-[11px] font-bold tracking-[0.2em] uppercase px-6 py-2.5 rounded-full border transition-all ${
@@ -40,10 +41,11 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
       <div className="space-y-16">
         {flights.map((flight: any, index: number) => (
           <div key={index} className="flex flex-col">
+            {/* 航班號與地點 */}
             <div className="border-b-2 border-[#C6B8A6] pb-6 mb-8 flex justify-between items-end">
               <div className="flex flex-col gap-2 flex-1">
                 {isEditing ? (
-                  <input className="text-xs bg-white/80 border border-[#C6B8A6] rounded px-2 py-1 outline-none w-32" value={flight.flightNum || ''} placeholder="航班號" onChange={(e) => updateFlight('flightNum', e.target.value, index)} />
+                  <input className="text-xs bg-white/80 border border-[#C6B8A6] rounded px-2 py-1 outline-none w-32" value={flight.flightNum || ''} placeholder="Flight No." onChange={(e) => updateFlight('flightNum', e.target.value, index)} />
                 ) : (
                   <span className="text-[11px] font-bold tracking-[0.3em] uppercase text-[#8E735B]">{flight.flightNum || 'JX741'}</span>
                 )}
@@ -65,7 +67,8 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-y-10 gap-x-8 mb-10 text-left">
+            {/* 資訊網格 */}
+            <div className="grid grid-cols-2 gap-y-10 gap-x-8 mb-10">
               {[
                 { label: 'Date', field: 'date' },
                 { label: 'Gate', field: 'gate' },
@@ -83,16 +86,17 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
               ))}
             </div>
 
-            <div className="space-y-4 text-left">
+            {/* 圖片上傳區 */}
+            <div className="space-y-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9A9A9A]">Digital Pass Screenshot</p>
               <div className="relative aspect-[3/4] bg-white rounded-[12px] border border-[#E2DFD8] overflow-hidden shadow-sm">
                 {flight.imgUrl ? (
                   <>
                     <img src={flight.imgUrl} className="w-full h-full object-cover" alt="Ticket" />
                     <div className="absolute bottom-4 right-4 flex gap-2">
-                      <button onClick={() => setPreviewImg(flight.imgUrl)} className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] active:scale-90"><Maximize2 size={18}/></button>
+                      <button onClick={() => setPreviewImg(flight.imgUrl)} className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F]"><Maximize2 size={18}/></button>
                       {isEditing && (
-                        <label className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] cursor-pointer active:scale-90">
+                        <label className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] cursor-pointer">
                           <Camera size={18}/><input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index)} className="hidden" />
                         </label>
                       )}
@@ -107,14 +111,42 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
                 )}
               </div>
             </div>
+
+            {/* PDF 連結區 - 修正為可編輯 */}
+            <div className="mt-8">
+              {isEditing ? (
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9A9A9A]">E-Ticket PDF Link</label>
+                  <input 
+                    className="w-full bg-white border border-[#E2DFD8] p-4 rounded-[12px] text-xs outline-none focus:border-[#C6B8A6]"
+                    placeholder="Paste PDF URL (Google Drive, etc.)"
+                    value={flight.pdfUrl || ''}
+                    onChange={(e) => updateFlight('pdfUrl', e.target.value, index)}
+                  />
+                </div>
+              ) : (
+                <button 
+                  onClick={() => flight.pdfUrl && window.open(flight.pdfUrl, '_blank')}
+                  className="w-full py-5 rounded-[12px] text-[13px] font-bold tracking-[0.2em] uppercase flex items-center justify-center gap-3 transition-all border"
+                  style={{ 
+                    backgroundColor: flight.pdfUrl ? '#2F2F2F' : 'transparent',
+                    color: flight.pdfUrl ? '#FFFFFF' : '#9A9A9A',
+                    borderColor: flight.pdfUrl ? '#2F2F2F' : '#E2DFD8'
+                  }}
+                >
+                  <FileText size={18} />
+                  {flight.pdfUrl ? 'Open E-Ticket PDF' : 'No PDF Linked'}
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
 
       {previewImg && (
-        <div className="fixed inset-0 bg-[#F5F3EE]/98 z-[200] flex items-center justify-center p-6 animate-in fade-in" onClick={() => setPreviewImg(null)}>
+        <div className="fixed inset-0 bg-[#F5F3EE]/98 z-[200] flex items-center justify-center p-6" onClick={() => setPreviewImg(null)}>
           <button className="absolute top-12 right-8 text-[#2F2F2F]"><X size={32}/></button>
-          <img src={previewImg} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" alt="Preview" />
+          <img src={previewImg} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" />
         </div>
       )}
     </div>
