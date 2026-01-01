@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { Home, Calendar, ShoppingBag, Ticket, Wallet, Camera, Share2, Download } from 'lucide-react';
+import { useState, useEffect } from 'react'; // 移除了 useRef
+import { Home, Calendar, ShoppingBag, Ticket, Wallet } from 'lucide-react'; // 移除了 Camera, Share2, Download
 import './index.css';
-import defaultHomeIllustration from './assets/home-trip.png';
 
 import ScheduleTab from './components/ScheduleTab';
 import BookingTab from './components/BookingTab';
@@ -10,7 +9,6 @@ import ExpenseTab from './components/ExpenseTab';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getInitialData = (key: string, defaultValue: any) => {
     const saved = localStorage.getItem(key);
@@ -20,41 +18,43 @@ export default function App() {
   const [tripTitle, setTripTitle] = useState(() => getInitialData('intl_trip_title', 'THAILAND JOURNEY'));
   const [startDate, setStartDate] = useState(() => getInitialData('intl_start_date', '2026-02-12'));
   const [endDate, setEndDate] = useState(() => getInitialData('intl_end_date', '2026-02-17'));
-  const [homeImage, setHomeImage] = useState(() => getInitialData('intl_home_image', defaultHomeIllustration));
-  const [homeHeadline, setHomeHeadline] = useState(() => getInitialData('intl_home_headline', 'Travel Protocol.'));
-  const [homeSubtext, setHomeSubtext] = useState(() => getInitialData('intl_home_subtext', 'Minimalist Journey Design.'));
+  const [homeHeadline] = useState(() => getInitialData('intl_home_headline', 'Travel Protocol.'));
+  const [homeSubtext] = useState(() => getInitialData('intl_home_subtext', 'Minimalist Journey Design.'));
   
   const [isEditingTab, setIsEditingTab] = useState(false);
 
   const [scheduleData, setScheduleData] = useState(() => getInitialData('thai_schedule', []));
   const [flights, setFlights] = useState(() => getInitialData('thai_flights', [
-    { from: 'TPE', to: 'BKK', flightNum: 'JX741', date: '02/12', time: '10:40', gate: 'B7', seat: '24K', imgUrl: '', pdfUrl: '' }
+    { from: 'TPE', to: 'BKK', flightNum: 'JX741', date: '02/12', time: '10:40', gate: 'B7', seat: '24K', imgUrl: '' }
   ]));
   const [shoppingList, setShoppingList] = useState(() => getInitialData('thai_shopping', []));
   const [expenseList, setExpenseList] = useState(() => getInitialData('thai_expense', []));
 
   useEffect(() => {
-    const data = { intl_trip_title: tripTitle, intl_start_date: startDate, intl_end_date: endDate, intl_home_image: homeImage, intl_home_headline: homeHeadline, intl_home_subtext: homeSubtext, thai_schedule: scheduleData, thai_flights: flights, thai_shopping: shoppingList, thai_expense: expenseList };
+    const data = { intl_trip_title: tripTitle, intl_start_date: startDate, intl_end_date: endDate, thai_schedule: scheduleData, thai_flights: flights, thai_shopping: shoppingList, thai_expense: expenseList };
     Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
-  }, [tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext, scheduleData, flights, shoppingList, expenseList]);
+  }, [tripTitle, startDate, endDate, scheduleData, flights, shoppingList, expenseList]);
 
   return (
     <div className="max-w-[430px] mx-auto min-h-screen flex flex-col relative font-inter bg-[#F5F3EE] text-[#2F2F2F] text-left">
       {activeTab === 'home' && (
         <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start animate-in fade-in">
-          <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase leading-tight">{tripTitle}</h1>
-          <p className="text-[13px] font-medium tracking-[0.15em] uppercase text-[#5A5A5A] mt-2">
-            {startDate.replace(/-/g, '.')} — {endDate.split('-').pop()}
-          </p>
+          <input 
+            className="text-[28px] font-semibold tracking-[0.12em] uppercase leading-tight bg-transparent border-b border-transparent focus:border-[#A69685] outline-none w-full" 
+            value={tripTitle} 
+            onChange={(e) => setTripTitle(e.target.value)} 
+          />
+          <div className="flex gap-2 mt-2">
+            <input className="text-[13px] bg-transparent w-20 outline-none" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <span className="text-[13px]">—</span>
+            <input className="text-[13px] bg-transparent w-20 outline-none" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
         </header>
       )}
 
       <main className={`w-full px-10 flex-1 pb-48 ${activeTab !== 'home' ? 'pt-16' : ''}`}>
         {activeTab === 'home' && (
           <div className="flex flex-col animate-in fade-in">
-            <div className="relative w-full aspect-[3/4] mt-10 bg-white rounded-[16px] border border-[#E2DFD8] overflow-hidden shadow-sm">
-              <img src={homeImage} className="w-full h-full object-cover" />
-            </div>
             <div className="mt-12 space-y-4">
               <h2 className="text-[22px] font-semibold tracking-tight">{homeHeadline}</h2>
               <p className="text-[16px] leading-relaxed font-light text-[#5A5A5A]">{homeSubtext}</p>
