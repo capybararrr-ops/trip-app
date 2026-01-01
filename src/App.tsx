@@ -46,7 +46,7 @@ export default function App() {
   const [isEditingHeadline, setIsEditingHeadline] = useState(false);
   const [isEditingSubtext, setIsEditingSubtext] = useState(false);
 
-  // 3. 行程數據狀態
+  // 3. 行程數據狀態 (含 set 方法供還原使用)
   const [scheduleData, setScheduleData] = useState(() => getInitialData('thai_schedule', []));
   const [flights, setFlights] = useState(() => getInitialData('thai_flights', []));
   const [shoppingList, setShoppingList] = useState(() => getInitialData('thai_shopping', []));
@@ -123,6 +123,7 @@ export default function App() {
       className="max-w-[430px] mx-auto min-h-screen flex flex-col relative transition-all duration-500 font-inter text-left"
       style={{ backgroundColor: GLOBAL_THEME.bgBase, color: GLOBAL_THEME.textMain }}
     >
+      {/* --- Header: 大標題 Semibold 600 --- */}
       <header className="w-full px-8 pt-20 pb-10 flex flex-col items-start">
         {isEditingTitle ? (
           <input
@@ -157,9 +158,11 @@ export default function App() {
         </div>
       </header>
 
+      {/* --- Main Area --- */}
       <main className="w-full px-8 flex-1 pb-48">
         {activeTab === 'home' && (
           <div className="flex flex-col animate-in fade-in duration-700">
+            {/* 圖片區域：點擊右下角相機換圖 */}
             <div className="relative group w-full aspect-[4/5] bg-white rounded-[14px] border border-[#E2DFD8] flex items-center justify-center overflow-hidden shadow-sm">
               <img src={homeImage} alt="Trip" className="w-full h-full object-cover" />
               <button 
@@ -173,6 +176,7 @@ export default function App() {
 
             <div className="mt-10 space-y-8">
               <div className="space-y-3">
+                {/* 可編輯首頁標語 */}
                 {isEditingHeadline ? (
                   <input
                     autoFocus
@@ -187,6 +191,7 @@ export default function App() {
                   </h2>
                 )}
 
+                {/* 可編輯副標題說明 */}
                 {isEditingSubtext ? (
                   <textarea
                     autoFocus
@@ -212,6 +217,7 @@ export default function App() {
                 Start Journey
               </button>
 
+              {/* 數據管理按鈕 */}
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <button onClick={handleBackup} className="flex items-center justify-center gap-2 py-4 border border-[#E2DFD8] rounded-[12px] text-[13px] font-semibold text-[#6B6B6B] hover:bg-white transition-all">
                   <Share2 size={16} /> BACKUP
@@ -224,12 +230,14 @@ export default function App() {
           </div>
         )}
 
+        {/* 子分頁內容 */}
         {activeTab === 'schedule' && <ScheduleTab scheduleData={scheduleData} setScheduleData={setScheduleData} />}
         {activeTab === 'shopping' && <ShoppingTab shoppingList={shoppingList} setShoppingList={setShoppingList} />}
         {activeTab === 'bookings' && <BookingTab flights={flights} setFlights={setFlights} isEditing={false} setIsEditing={() => {}} />}
         {activeTab === 'expense' && <ExpenseTab expenseList={expenseList} setExpenseList={setExpenseList} />}
       </main>
 
+      {/* --- Navigation Bar --- */}
       <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50 shadow-2xl shadow-black/5">
         <NavButton Icon={Home} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavButton Icon={Calendar} active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')} />
