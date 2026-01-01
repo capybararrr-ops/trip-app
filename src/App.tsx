@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Calendar, ShoppingBag, Ticket, Wallet, Camera } from 'lucide-react';
+import { Home, Calendar, ShoppingBag, Ticket, Wallet, Camera, Share2, Download } from 'lucide-react';
 import './index.css';
 import defaultHomeIllustration from './assets/home-trip.png';
 
-// 子組件引入
+// 子組件引入 (請確保路徑正確)
 import ScheduleTab from './components/ScheduleTab';
 import BookingTab from './components/BookingTab';
 import ShoppingTab from './components/ShoppingTab';
 import ExpenseTab from './components/ExpenseTab';
 
-// --- 一、國際版配色規範 ---
+// --- 國際版配色規範 (International Minimalist Palette) ---
 const GLOBAL_THEME = {
   bgBase: '#F5F3EE',       
   primary: '#C6B8A6',      
@@ -26,21 +26,27 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // --- 資料讀取與持久化邏輯 ---
   const getInitialData = (key: string, defaultValue: any) => {
     const saved = localStorage.getItem(key);
     try { return saved ? JSON.parse(saved) : defaultValue; } catch { return defaultValue; }
   };
 
-  // --- 狀態設定 ---
+  // 1. 首頁與全局狀態
   const [tripTitle, setTripTitle] = useState(() => getInitialData('intl_trip_title', 'Thailand Journey'));
   const [startDate, setStartDate] = useState(() => getInitialData('intl_start_date', '2026-02-12'));
   const [endDate, setEndDate] = useState(() => getInitialData('intl_end_date', '2026-02-17'));
   const [homeImage, setHomeImage] = useState(() => getInitialData('intl_home_image', defaultHomeIllustration));
+  const [homeHeadline, setHomeHeadline] = useState(() => getInitialData('intl_home_headline', 'Travel Protocol.'));
+  const [homeSubtext, setHomeSubtext] = useState(() => getInitialData('intl_home_subtext', 'Design your journey with a rational and minimalist perspective.'));
   
+  // 2. 編輯模式切換
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
+  const [isEditingHeadline, setIsEditingHeadline] = useState(false);
+  const [isEditingSubtext, setIsEditingSubtext] = useState(false);
 
-  // 數據狀態 (未使用 set 方法可加底線避免 TS 報錯)
+  // 3. 行程數據狀態
   const [scheduleData, setScheduleData] = useState(() => getInitialData('thai_schedule', []));
   const [flights, setFlights] = useState(() => getInitialData('thai_flights', []));
   const [shoppingList, setShoppingList] = useState(() => getInitialData('thai_shopping', []));
@@ -60,44 +66,75 @@ export default function App() {
     return `${s} — ${e}`;
   };
 
-  // --- 圖片更換邏輯 ---
+  // --- 備份與還原功能 ---
+  const handleBackup = () => {
+    const allData = { 
+      tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext,
+      scheduleData, flights, shoppingList, expenseList 
+    };
+    const jsonString = JSON.stringify(allData);
+    navigator.clipboard.writeText(jsonString).then(() => {
+      alert("✅ 資料密碼已複製！");
+    });
+  };
+
+  const handleRestore = () => {
+    const backup = prompt("請貼入之前的資料密碼：");
+    if (backup) {
+      try {
+        const p = JSON.parse(backup);
+        if (p.tripTitle) setTripTitle(p.tripTitle);
+        if (p.startDate) setStartDate(p.startDate);
+        if (p.endDate) setEndDate(p.endDate);
+        if (p.homeImage) setHomeImage(p.homeImage);
+        if (p.homeHeadline) setHomeHeadline(p.homeHeadline);
+        if (p.homeSubtext) setHomeSubtext(p.homeSubtext);
+        if (p.scheduleData) setScheduleData(p.scheduleData);
+        if (p.flights) setFlights(p.flights);
+        if (p.shoppingList) setShoppingList(p.shoppingList);
+        if (p.expenseList) setExpenseList(p.expenseList);
+        alert("🎉 資料已全數還原！");
+      } catch (e) { alert("❌ 格式不正確"); }
+    }
+  };
+
+  // --- 圖片上傳邏輯 ---
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setHomeImage(reader.result as string);
-      };
+      reader.onloadend = () => setHomeImage(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
+  // --- 持久化 ---
   useEffect(() => {
     const data = { 
       intl_trip_title: tripTitle, intl_start_date: startDate, intl_end_date: endDate, 
-      intl_home_image: homeImage, thai_schedule: scheduleData, thai_flights: flights, 
-      thai_shopping: shoppingList, thai_expense: expenseList 
+      intl_home_image: homeImage, intl_home_headline: homeHeadline, intl_home_subtext: homeSubtext,
+      thai_schedule: scheduleData, thai_flights: flights, thai_shopping: shoppingList, thai_expense: expenseList 
     };
     Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
-  }, [tripTitle, startDate, endDate, homeImage, scheduleData, flights, shoppingList, expenseList]);
+  }, [tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext, scheduleData, flights, shoppingList, expenseList]);
 
   return (
     <div 
-      className="max-w-[430px] mx-auto min-h-screen flex flex-col relative transition-all duration-500 font-inter"
+      className="max-w-[430px] mx-auto min-h-screen flex flex-col relative transition-all duration-500 font-inter text-left"
       style={{ backgroundColor: GLOBAL_THEME.bgBase, color: GLOBAL_THEME.textMain }}
     >
-      {/* --- Header: 字體 Semibold --- */}
       <header className="w-full px-8 pt-20 pb-10 flex flex-col items-start">
         {isEditingTitle ? (
           <input
             autoFocus
-            className="text-[28px] font-semibold tracking-tight bg-transparent border-b-2 border-[#C6B8A6] outline-none w-full"
+            className="text-[30px] font-semibold tracking-tight bg-transparent border-b-2 border-[#C6B8A6] outline-none w-full"
             value={tripTitle}
             onChange={(e) => setTripTitle(e.target.value)}
             onBlur={() => setIsEditingTitle(false)}
+            onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
           />
         ) : (
-          <h1 className="text-[28px] font-semibold tracking-tight uppercase cursor-pointer leading-tight" onClick={() => setIsEditingTitle(true)}>
+          <h1 className="text-[30px] font-semibold tracking-tight uppercase cursor-pointer leading-tight" onClick={() => setIsEditingTitle(true)}>
             {tripTitle}
           </h1>
         )}
@@ -110,9 +147,9 @@ export default function App() {
               <input type="date" className="text-base bg-white border border-[#E2DFD8] p-2 rounded-lg" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           ) : (
-            <p className="text-[15px] tracking-[0.15em] font-regular cursor-pointer flex items-center" style={{ color: GLOBAL_THEME.textSub }} onClick={() => setIsEditingDate(true)}>
+            <p className="text-[16px] font-normal tracking-[0.1em] cursor-pointer flex items-center" style={{ color: GLOBAL_THEME.textSub }} onClick={() => setIsEditingDate(true)}>
               {formatDateDisplay(startDate, endDate)}
-              <span className="ml-3 font-bold px-2 py-0.5 rounded bg-[#D2A48C]/10 text-[#D2A48C]">
+              <span className="ml-3 font-semibold px-2 py-0.5 rounded bg-[#D2A48C]/10 text-[#D2A48C] text-[14px]">
                 {calculateDays(startDate, endDate)} DAYS
               </span>
             </p>
@@ -120,11 +157,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* --- Main Area --- */}
-      <main className="w-full px-8 flex-1 pb-44">
+      <main className="w-full px-8 flex-1 pb-48">
         {activeTab === 'home' && (
           <div className="flex flex-col animate-in fade-in duration-700">
-            {/* 圖片區域：增加更換按鈕 */}
             <div className="relative group w-full aspect-[4/5] bg-white rounded-[14px] border border-[#E2DFD8] flex items-center justify-center overflow-hidden shadow-sm">
               <img src={homeImage} alt="Trip" className="w-full h-full object-cover" />
               <button 
@@ -138,32 +173,64 @@ export default function App() {
 
             <div className="mt-10 space-y-8">
               <div className="space-y-3">
-                <h2 className="text-[22px] font-semibold tracking-tight">Travel Protocol.</h2>
-                <p className="text-[16px] font-regular leading-relaxed" style={{ color: GLOBAL_THEME.textSub }}>
-                  Design your journey with a rational and minimalist perspective.
-                </p>
+                {isEditingHeadline ? (
+                  <input
+                    autoFocus
+                    className="text-[24px] font-semibold tracking-tight bg-transparent border-b border-[#C6B8A6] outline-none w-full"
+                    value={homeHeadline}
+                    onChange={(e) => setHomeHeadline(e.target.value)}
+                    onBlur={() => setIsEditingHeadline(false)}
+                  />
+                ) : (
+                  <h2 className="text-[24px] font-semibold tracking-tight cursor-pointer" onClick={() => setIsEditingHeadline(true)}>
+                    {homeHeadline}
+                  </h2>
+                )}
+
+                {isEditingSubtext ? (
+                  <textarea
+                    autoFocus
+                    className="text-[17px] font-normal leading-relaxed bg-transparent border border-[#C6B8A6] p-2 rounded-lg outline-none w-full"
+                    style={{ color: GLOBAL_THEME.textSub }}
+                    value={homeSubtext}
+                    onChange={(e) => setHomeSubtext(e.target.value)}
+                    onBlur={() => setIsEditingSubtext(false)}
+                    rows={3}
+                  />
+                ) : (
+                  <p className="text-[17px] font-normal leading-relaxed cursor-pointer" style={{ color: GLOBAL_THEME.textSub }} onClick={() => setIsEditingSubtext(true)}>
+                    {homeSubtext}
+                  </p>
+                )}
               </div>
               
               <button 
                 onClick={() => setActiveTab('schedule')}
-                className="w-full py-5 rounded-[12px] text-base tracking-[0.2em] font-semibold uppercase transition-all active:scale-[0.98]"
+                className="w-full py-5 rounded-[12px] text-[16px] tracking-[0.2em] font-semibold uppercase transition-all active:scale-[0.98]"
                 style={{ backgroundColor: GLOBAL_THEME.primary, color: GLOBAL_THEME.white }}
               >
                 Start Journey
               </button>
+
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <button onClick={handleBackup} className="flex items-center justify-center gap-2 py-4 border border-[#E2DFD8] rounded-[12px] text-[13px] font-semibold text-[#6B6B6B] hover:bg-white transition-all">
+                  <Share2 size={16} /> BACKUP
+                </button>
+                <button onClick={handleRestore} className="flex items-center justify-center gap-2 py-4 border border-[#E2DFD8] rounded-[12px] text-[13px] font-semibold text-[#6B6B6B] hover:bg-white transition-all">
+                  <Download size={16} /> RESTORE
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* 子組件 */}
         {activeTab === 'schedule' && <ScheduleTab scheduleData={scheduleData} setScheduleData={setScheduleData} />}
         {activeTab === 'shopping' && <ShoppingTab shoppingList={shoppingList} setShoppingList={setShoppingList} />}
         {activeTab === 'bookings' && <BookingTab flights={flights} setFlights={setFlights} isEditing={false} setIsEditing={() => {}} />}
         {activeTab === 'expense' && <ExpenseTab expenseList={expenseList} setExpenseList={setExpenseList} />}
       </main>
 
-      {/* --- Navigation --- */}
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[390px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50 shadow-2xl shadow-black/5">
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50 shadow-2xl shadow-black/5">
         <NavButton Icon={Home} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
         <NavButton Icon={Calendar} active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')} />
         <NavButton Icon={ShoppingBag} active={activeTab === 'shopping'} onClick={() => setActiveTab('shopping')} />
