@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Maximize2, Camera, FileText, X, ArrowRight } from 'lucide-react';
+import { Maximize2, Camera, X, ArrowRight } from 'lucide-react'; // 移除了 FileText
 
 export default function BookingTab({ flights, setFlights, isEditing, setIsEditing }: any) {
   const [previewImg, setPreviewImg] = useState<string | null>(null);
@@ -82,11 +82,11 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
               <div className="relative aspect-[3/4] bg-white rounded-[12px] border border-[#E2DFD8] overflow-hidden shadow-sm">
                 {flight.imgUrl ? (
                   <>
-                    <img src={flight.imgUrl} className="w-full h-full object-cover" />
+                    <img src={flight.imgUrl} className="w-full h-full object-cover" alt="Ticket" />
                     <div className="absolute bottom-4 right-4 flex gap-2">
-                      <button onClick={() => setPreviewImg(flight.imgUrl)} className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F]"><Maximize2 size={18}/></button>
+                      <button onClick={() => setPreviewImg(flight.imgUrl)} className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] active:scale-90"><Maximize2 size={18}/></button>
                       {isEditing && (
-                        <label className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] cursor-pointer">
+                        <label className="bg-white/90 p-3 rounded-full shadow-md text-[#2F2F2F] cursor-pointer active:scale-90">
                           <Camera size={18}/><input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index)} className="hidden" />
                         </label>
                       )}
@@ -106,9 +106,9 @@ export default function BookingTab({ flights, setFlights, isEditing, setIsEditin
       </div>
 
       {previewImg && (
-        <div className="fixed inset-0 bg-[#F5F3EE]/98 z-[200] flex items-center justify-center p-6" onClick={() => setPreviewImg(null)}>
+        <div className="fixed inset-0 bg-[#F5F3EE]/98 z-[200] flex items-center justify-center p-6 animate-in fade-in" onClick={() => setPreviewImg(null)}>
           <button className="absolute top-12 right-8 text-[#2F2F2F]"><X size={32}/></button>
-          <img src={previewImg} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" />
+          <img src={previewImg} className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" alt="Preview" />
         </div>
       )}
     </div>
