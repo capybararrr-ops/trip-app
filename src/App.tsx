@@ -51,7 +51,7 @@ export default function App() {
 
   const handleBackup = () => {
     const data = { tripTitle, startDate, endDate, homeImage, homeHeadline, homeSubtext, scheduleData, flights, shoppingList, expenseList };
-    navigator.clipboard.writeText(JSON.stringify(data)).then(() => alert("✅ 資料密碼已複製到剪貼簿"));
+    navigator.clipboard.writeText(JSON.stringify(data)).then(() => alert("✅ 資料密碼已複製"));
   };
 
   const handleRestore = () => {
@@ -78,14 +78,24 @@ export default function App() {
   return (
     <div className="max-w-[430px] mx-auto min-h-screen flex flex-col relative font-inter bg-[#F5F3EE] text-[#2F2F2F] text-left">
       {activeTab === 'home' && (
-        <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start">
-          <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase cursor-pointer" onClick={() => setIsEditingTitle(true)}>{tripTitle}</h1>
-          <p className="text-[13px] font-medium tracking-[0.15em] uppercase text-[#5A5A5A] mt-2 cursor-pointer" onClick={() => setIsEditingDate(true)}>
-            {startDate.replace(/-/g, '.')} — {endDate.split('-').pop()} — <span className="text-[#8E735B]">{calculateDays(startDate, endDate)} DAYS</span>
-          </p>
-          {/* 隱藏的編輯框以通過編譯 */}
-          {isEditingTitle && <input className="hidden" />}
-          {isEditingDate && <input className="hidden" />}
+        <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start animate-in fade-in">
+          {isEditingTitle ? (
+            <input autoFocus className="text-[28px] font-semibold bg-transparent border-b border-[#A69685] outline-none w-full uppercase" value={tripTitle} onChange={(e) => setTripTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} />
+          ) : (
+            <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase cursor-pointer" onClick={() => setIsEditingTitle(true)}>{tripTitle}</h1>
+          )}
+          <div className="mt-2 min-h-[20px] text-[13px] font-medium tracking-[0.15em] uppercase text-[#5A5A5A]">
+            {isEditingDate ? (
+              <div className="flex gap-2" onBlur={() => setIsEditingDate(false)}>
+                <input className="border" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <input className="border" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              </div>
+            ) : (
+              <p className="cursor-pointer" onClick={() => setIsEditingDate(true)}>
+                {startDate.replace(/-/g, '.')} — {endDate.split('-').pop()} — <span className="text-[#8E735B]">{calculateDays(startDate, endDate)} DAYS</span>
+              </p>
+            )}
+          </div>
         </header>
       )}
 
@@ -102,10 +112,16 @@ export default function App() {
             </div>
             <div className="mt-12 space-y-8">
               <div className="space-y-4">
-                <h2 className="text-[22px] font-semibold tracking-tight cursor-pointer" onClick={() => setIsEditingHeadline(true)}>{homeHeadline}</h2>
-                <p className="text-[16px] leading-relaxed font-light text-[#5A5A5A] cursor-pointer" onClick={() => setIsEditingSubtext(true)}>{homeSubtext}</p>
-                {isEditingHeadline && <input className="hidden" />}
-                {isEditingSubtext && <input className="hidden" />}
+                {isEditingHeadline ? (
+                  <input autoFocus className="text-[22px] font-semibold bg-transparent border-b border-[#A69685] outline-none w-full" value={homeHeadline} onChange={(e) => setHomeHeadline(e.target.value)} onBlur={() => setIsEditingHeadline(false)} />
+                ) : (
+                  <h2 className="text-[22px] font-semibold tracking-tight cursor-pointer" onClick={() => setIsEditingHeadline(true)}>{homeHeadline}</h2>
+                )}
+                {isEditingSubtext ? (
+                  <textarea autoFocus className="text-[16px] leading-relaxed font-light bg-transparent border border-[#E2DFD8] p-2 rounded outline-none w-full" rows={3} value={homeSubtext} onChange={(e) => setHomeSubtext(e.target.value)} onBlur={() => setIsEditingSubtext(false)} />
+                ) : (
+                  <p className="text-[16px] leading-relaxed font-light text-[#5A5A5A] cursor-pointer" onClick={() => setIsEditingSubtext(true)}>{homeSubtext}</p>
+                )}
               </div>
               <button onClick={() => setActiveTab('schedule')} className="w-full py-5 rounded-[16px] text-[15px] font-semibold uppercase bg-[#A69685] text-white">START JOURNEY</button>
               <div className="flex justify-center gap-8 pt-4">
