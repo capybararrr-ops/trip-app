@@ -106,4 +106,79 @@ export default function App() {
     <div className="max-w-[430px] mx-auto min-h-screen flex flex-col relative font-inter text-left" style={{ backgroundColor: THEME.bgBase, color: THEME.textMain }}>
       <header className="w-full px-10 pt-24 pb-4 flex flex-col items-start">
         {isEditingTitle ? (
-          <input autoFocus className="
+          <input autoFocus className="text-[28px] font-semibold tracking-[0.12em] bg-transparent border-b-2 border-[#A69685] outline-none w-full" value={tripTitle} onChange={(e) => setTripTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} />
+        ) : (
+          <h1 className="text-[28px] font-semibold tracking-[0.12em] uppercase cursor-pointer leading-tight" onClick={() => setIsEditingTitle(true)}>{tripTitle}</h1>
+        )}
+        <div className="mt-2 min-h-[20px]">
+          {isEditingDate ? (
+            <div className="flex items-center gap-2" onBlur={() => setIsEditingDate(false)}>
+              <input type="date" className="text-xs bg-white border border-[#E2DFD8] p-1 rounded" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <input type="date" className="text-xs bg-white border border-[#E2DFD8] p-1 rounded" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
+          ) : (
+            <p className="text-[13px] font-medium tracking-[0.15em] uppercase" style={{ color: THEME.textSub }} onClick={() => setIsEditingDate(true)}>
+              {formatDateDisplay(startDate, endDate)} — <span style={{ color: THEME.highlight }}>{calculateDays(startDate, endDate)} DAYS</span>
+            </p>
+          )}
+        </div>
+      </header>
+
+      <main className="w-full px-10 flex-1 pb-48">
+        {activeTab === 'home' && (
+          <div className="flex flex-col animate-in fade-in duration-1000">
+            <div className="relative group w-full aspect-[3/4] mt-10 bg-white rounded-[16px] border border-[#E2DFD8] flex items-center justify-center overflow-hidden shadow-sm">
+              <img src={homeImage} alt="Trip" className="w-full h-full object-cover grayscale-[5%] transition-all duration-700" />
+              <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-4 right-4 p-3 bg-white/90 backdrop-blur rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><Camera size={18} color={THEME.textMain} /></button>
+              <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleImageUpload} />
+            </div>
+
+            <div className="mt-12 space-y-10">
+              <div className="space-y-4">
+                {isEditingHeadline ? (
+                  <input autoFocus className="text-[22px] font-semibold tracking-tight bg-transparent border-b border-[#A69685] outline-none w-full" value={homeHeadline} onChange={(e) => setHomeHeadline(e.target.value)} onBlur={() => setIsEditingHeadline(false)} />
+                ) : (
+                  <h2 className="text-[22px] font-semibold tracking-tight" onClick={() => setIsEditingHeadline(true)}>{homeHeadline}</h2>
+                )}
+                {isEditingSubtext ? (
+                  <textarea autoFocus className="text-[16px] leading-relaxed font-light bg-transparent border border-[#E2DFD8] p-2 rounded outline-none w-full" style={{ color: THEME.textSub }} value={homeSubtext} onChange={(e) => setHomeSubtext(e.target.value)} onBlur={() => setIsEditingSubtext(false)} rows={3} />
+                ) : (
+                  <p className="text-[16px] leading-relaxed font-light" style={{ color: THEME.textSub }} onClick={() => setIsEditingSubtext(true)}>{homeSubtext}</p>
+                )}
+              </div>
+              <button onClick={() => setActiveTab('schedule')} className="w-full py-5 rounded-[16px] text-[15px] tracking-[0.25em] font-semibold uppercase transition-all active:scale-[0.98]" style={{ backgroundColor: THEME.primary, color: THEME.white }}>START JOURNEY</button>
+              <div className="flex justify-center gap-8 pt-2">
+                <button onClick={handleBackup} className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2"><Share2 size={12}/> Backup</button>
+                <button onClick={handleRestore} className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2"><Download size={12}/> Restore</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'schedule' && <ScheduleTab scheduleData={scheduleData} setScheduleData={setScheduleData} />}
+        {activeTab === 'shopping' && <ShoppingTab shoppingList={shoppingList} setShoppingList={setShoppingList} />}
+        {activeTab === 'bookings' && <BookingTab flights={flights} setFlights={setFlights} isEditing={false} setIsEditing={() => {}} />}
+        {activeTab === 'expense' && <ExpenseTab expenseList={expenseList} setExpenseList={setExpenseList} />}
+      </main>
+
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[390px] h-20 bg-white/95 backdrop-blur-md rounded-[24px] border border-[#E2DFD8] flex justify-around items-center px-4 z-50 shadow-2xl shadow-black/5">
+        <NavButton Icon={Home} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+        <NavButton Icon={Calendar} active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')} />
+        <NavButton Icon={ShoppingBag} active={activeTab === 'shopping'} onClick={() => setActiveTab('shopping')} />
+        <NavButton Icon={Ticket} active={activeTab === 'bookings'} onClick={() => setActiveTab('bookings')} />
+        <NavButton Icon={Wallet} active={activeTab === 'expense'} onClick={() => setActiveTab('expense')} />
+      </nav>
+    </div>
+  );
+}
+
+function NavButton({ Icon, active, onClick }: { Icon: any, active: boolean, onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="flex flex-col items-center justify-center flex-1 outline-none relative">
+      <div className={`p-3 rounded-2xl transition-all duration-300 ${active ? 'bg-[#F5F3EE] scale-110' : 'bg-transparent opacity-30'}`}>
+        <Icon size={22} strokeWidth={active ? 2.2 : 1.5} style={{ color: active ? '#8E735B' : '#2F2F2F' }} />
+      </div>
+      {active && <div className="absolute -bottom-1 w-1 h-1 bg-[#8E735B] rounded-full"></div>}
+    </button>
+  );
+}
